@@ -4,6 +4,10 @@ class GameBoard
     populate_coordinates
   end
 
+  def knight_moves(start_pos, end_pos)
+    knight = Knight.new(start_pos)
+  end
+
   private
 
   def populate_coordinates
@@ -21,9 +25,11 @@ end
 
 class Knight
   attr_reader :current_position
-  
+
   def initialize(start_position)
-    @current_position = start_position
+    from_start = PossibleMove.new(start_position)
+    @current_position = from_start.current_coordinate
+    @next_moves = from_start.next_possible_moves
   end
 end
 
