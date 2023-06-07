@@ -19,7 +19,13 @@ class GameBoard
   end
 end
 
-class Knight end
+class Knight
+  attr_reader :current_position
+  
+  def initialize(start_position)
+    @current_position = start_position
+  end
+end
 
 class PossibleMove
   attr_reader :current_coordinate
