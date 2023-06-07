@@ -20,6 +20,15 @@ class GameBoard
 end
 
 class Knight end
-class Move end
+
+class PossibleMove
+  attr_reader :current_coordinate
+  attr_accessor :next_possible_moves
+
+  def initialize(coordinate)
+    @current_coordinate = coordinate
+    @next_possible_moves = []
+  end
+end
 
 board = GameBoard.new
