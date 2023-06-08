@@ -1,7 +1,7 @@
 class GameBoard
   def initialize
-    @coordinates = []
-    populate_coordinates
+    @tiles = []
+    populate_tiles
   end
 
   def knight_moves(start_pos, _end_pos)
@@ -10,12 +10,12 @@ class GameBoard
 
   private
 
-  def populate_coordinates
+  def populate_tiles
     x = 1
     while x < 9
       y = 1
       while y < 9
-        @coordinates << [x, y]
+        @tiles << [x, y]
         y += 1
       end
       x += 1
@@ -24,12 +24,18 @@ class GameBoard
 end
 
 class Knight
-  attr_reader :current_position, :next_moves
-
   def initialize(start_position)
-    from_start = PossibleMove.new(start_position, 3)
-    @current_position = from_start.current_coordinates
-    @next_moves = from_start.next_possible_moves
+    @current_tile = PossibleMove.new(start_position, 3)
+    @next_moves = @current_tile.next_possible_moves
+  end
+
+  def current_position
+    @current_tile.current_coordinates
+  end
+
+  def show_next_moves
+    puts "Your next possible moves from current position: #{current_position}"
+    @current_tile.next_possible_moves.each { |possible_move| puts "-> #{possible_move.current_coordinates}" }
   end
 end
 
@@ -37,53 +43,15 @@ class PossibleMove
   attr_reader :current_coordinates
   attr_accessor :next_possible_moves
 
-  def initialize(coordinates, height)
+  def initialize(coordinates, possibilities_depth)
     @current_coordinates = coordinates
-    @next_possible_moves = generate_next_possible_moves(height)
+    @next_possible_moves = generate_next_possible_moves(possibilities_depth)
   end
 
-  def generate_next_possible_moves(height)
-    return if height.zero?
+  def generate_next_possible_moves(depth)
+    return if depth.negative?
 
-    all_possible_coordinates.map { |coordinates| PossibleMove.new(coordinates, height - 1) }
-  end
-
-  def pretty_print(node = self, prefix = '', is_left = true)
-    return if node.nil?
-
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[0], "#{prefix}#{is_left ? '│   ' : '    '}",
-                   false)
-    end
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[1], "#{prefix}#{is_left ? '│   ' : '    '}",
-                   false)
-    end
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[2], "#{prefix}#{is_left ? '│   ' : '    '}",
-                   false)
-    end
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[3], "#{prefix}#{is_left ? '│   ' : '    '}",
-                   false)
-    end
-    puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.current_coordinates}"
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[4], "#{prefix}#{is_left ? '    ' : '│   '}",
-                   true)
-    end
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[5], "#{prefix}#{is_left ? '    ' : '│   '}",
-                   true)
-    end
-    unless node.next_possible_moves.nil?
-      pretty_print(node.next_possible_moves[6], "#{prefix}#{is_left ? '    ' : '│   '}",
-                   true)
-    end
-    return if node.next_possible_moves.nil?
-
-    pretty_print(node.next_possible_moves[7], "#{prefix}#{is_left ? '    ' : '│   '}",
-                 true)
+    all_possible_coordinates.map { |coordinates| PossibleMove.new(coordinates, depth - 1) }
   end
 
   private
@@ -119,3 +87,4 @@ end
 
 board = GameBoard.new
 knight = Knight.new([1, 1])
+knight.show_next_moves
