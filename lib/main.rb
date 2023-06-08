@@ -24,25 +24,67 @@ class GameBoard
 end
 
 class Knight
-  attr_reader :current_position
+  attr_reader :current_position, :next_moves
 
   def initialize(start_position)
-    from_start = PossibleMove.new(start_position)
-    @current_position = from_start.current_coordinate
+    from_start = PossibleMove.new(start_position, 3)
+    @current_position = from_start.current_coordinates
     @next_moves = from_start.next_possible_moves
   end
 end
 
 class PossibleMove
-  attr_reader :current_coordinate
+  attr_reader :current_coordinates
   attr_accessor :next_possible_moves
 
-  def initialize(coordinates)
+  def initialize(coordinates, height)
     @current_coordinates = coordinates
-    @next_possible_moves = all_possible_coordinates # for now
+    @next_possible_moves = generate_next_possible_moves(height)
   end
 
-  def generate_next_possible_moves; end
+  def generate_next_possible_moves(height)
+    return if height.zero?
+
+    all_possible_coordinates.map { |coordinates| PossibleMove.new(coordinates, height - 1) }
+  end
+
+  def pretty_print(node = self, prefix = '', is_left = true)
+    return if node.nil?
+
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[0], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[1], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[2], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[3], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.current_coordinates}"
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[4], "#{prefix}#{is_left ? '    ' : '│   '}",
+                   true)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[5], "#{prefix}#{is_left ? '    ' : '│   '}",
+                   true)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[6], "#{prefix}#{is_left ? '    ' : '│   '}",
+                   true)
+    end
+    return if node.next_possible_moves.nil?
+
+    pretty_print(node.next_possible_moves[7], "#{prefix}#{is_left ? '    ' : '│   '}",
+                 true)
+  end
 
   private
 
@@ -76,5 +118,4 @@ class PossibleMove
 end
 
 board = GameBoard.new
-moves = PossibleMove.new([1, 1])
-p moves.next_possible_moves
+knight = Knight.new([1, 1])
