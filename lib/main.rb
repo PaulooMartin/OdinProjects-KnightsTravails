@@ -43,7 +43,7 @@ class PossibleMove
   attr_reader :current_coordinates
   attr_accessor :next_possible_moves
 
-  def initialize(coordinates, possibilities_depth)
+  def initialize(coordinates, possibilities_depth = 3)
     @current_coordinates = coordinates
     @next_possible_moves = generate_next_possible_moves(possibilities_depth)
   end
@@ -52,6 +52,44 @@ class PossibleMove
     return if depth.negative?
 
     all_possible_coordinates.map { |coordinates| PossibleMove.new(coordinates, depth - 1) }
+  end
+
+  def pretty_print(node = self, prefix = '', is_left = true)
+    return if node.nil?
+
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[0], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[1], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[2], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[3], "#{prefix}#{is_left ? '│   ' : '    '}",
+                   false)
+    end
+    puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.current_coordinates}"
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[4], "#{prefix}#{is_left ? '    ' : '│   '}",
+                   true)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[5], "#{prefix}#{is_left ? '    ' : '│   '}",
+                   true)
+    end
+    unless node.next_possible_moves.nil?
+      pretty_print(node.next_possible_moves[6], "#{prefix}#{is_left ? '    ' : '│   '}",
+                   true)
+    end
+    return if node.next_possible_moves.nil?
+
+    pretty_print(node.next_possible_moves[7], "#{prefix}#{is_left ? '    ' : '│   '}",
+                 true)
   end
 
   private
@@ -83,8 +121,33 @@ class PossibleMove
     end
     possible_coordinates.keep_if { |x, y| ((1..8).include? x) && ((1..8).include? y) }
   end
+
+  def find_depth_of_future_move(from_path, tile_to_find)
+    return 0 if from_path.current_coordinates == tile_to_find
+    return 1000 if from_path.next_possible_moves.nil?
+
+    depths_all_next_paths = []
+    from_path.next_possible_moves.each do |next_path|
+      counter = 1
+      counter += find_depth_of_future_move(next_path, tile_to_find)
+      depths_all_next_paths << counter
+    end
+    depths_all_next_paths.min
+  end
+
+
 end
 
 board = GameBoard.new
 knight = Knight.new([1, 1])
-knight.show_next_moves
+moves = PossibleMove.new([1, 1], 3)
+moves.pretty_print
+distance = []
+moves.next_possible_moves.each do |path|
+  distance << moves.find_depth_of_future_move(path, [1, 3])
+end
+p distance
+p moves.next_possible_moves[0].current_coordinates
+p moves.next_possible_moves[1].current_coordinates
+# arr.index(arr.min) for future
+# make commit for depth
