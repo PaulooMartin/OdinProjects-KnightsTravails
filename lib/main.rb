@@ -1,26 +1,15 @@
 class GameBoard
-  def initialize
-    @tiles = []
-    populate_tiles
-  end
-
   def knight_moves(start_pos, end_pos)
     knight = Knight.new(start_pos)
-    knight.move_to_tile(end_pos)
-  end
-
-  private
-
-  def populate_tiles
-    x = 1
-    while x < 9
-      y = 1
-      while y < 9
-        @tiles << [x, y]
-        y += 1
-      end
-      x += 1
+    moves = 0
+    puts "Knight's path from #{start_pos} to #{end_pos}: "
+    p knight.current_position
+    until knight.current_position == end_pos
+      knight.move_closer_to_tile(end_pos)
+      p knight.current_position
+      moves += 1
     end
+    puts "Nice! You made it in #{moves} moves!"
   end
 end
 
@@ -39,20 +28,13 @@ class Knight
     @current_tile.next_possible_moves.each { |possible_move| puts "-> #{possible_move.current_coordinates}" }
   end
 
-  def move_to_tile(desired_coords)
-    moves = 0
-    until @current_tile.current_coordinates == desired_coords
-      depths_all_paths = []
-      @next_moves.each do |path|
-        depths_all_paths << @current_tile.find_depth_of_future_move(path, desired_coords)
-      end
-      index_lowest = depths_all_paths.index(depths_all_paths.min)
-      @current_tile = @next_moves[index_lowest]
-      @next_moves = @current_tile.next_possible_moves
-      p @current_tile.current_coordinates
-      moves += 1
+  def move_closer_to_tile(desired_coords)
+    depths_all_paths = []
+    @next_moves.each do |path|
+      depths_all_paths << @current_tile.find_depth_of_future_move(path, desired_coords)
     end
-    puts "Finished in #{moves} moves"
+    @current_tile = @next_moves[depths_all_paths.index(depths_all_paths.min)]
+    @next_moves = @current_tile.next_possible_moves
   end
 end
 
@@ -65,13 +47,20 @@ class PossibleMove
     @next_possible_moves = generate_next_possible_moves(possibilities_depth)
   end
 
-  def generate_next_possible_moves(depth)
-    return if depth.negative?
+  def find_depth_of_future_move(from_path, tile_to_find)
+    return 0 if from_path.current_coordinates == tile_to_find
+    return 1000 if from_path.next_possible_moves.nil?
 
-    all_possible_coordinates.map { |coordinates| PossibleMove.new(coordinates, depth - 1) }
+    depths_all_next_paths = []
+    from_path.next_possible_moves.each do |next_path|
+      counter = 1
+      counter += find_depth_of_future_move(next_path, tile_to_find)
+      depths_all_next_paths << counter
+    end
+    depths_all_next_paths.min
   end
 
-  def pretty_print(node = self, prefix = '', is_left = true)
+  def ugly_print(node = self, prefix = '', is_left = true)
     return if node.nil?
 
     unless node.next_possible_moves.nil?
@@ -109,7 +98,7 @@ class PossibleMove
                  true)
   end
 
-  # private
+  private
 
   def all_possible_coordinates
     x, y = @current_coordinates
@@ -139,21 +128,12 @@ class PossibleMove
     possible_coordinates.keep_if { |x, y| ((1..8).include? x) && ((1..8).include? y) }
   end
 
-  def find_depth_of_future_move(from_path, tile_to_find)
-    return 0 if from_path.current_coordinates == tile_to_find
-    return 1000 if from_path.next_possible_moves.nil?
+  def generate_next_possible_moves(depth)
+    return if depth.negative?
 
-    depths_all_next_paths = []
-    from_path.next_possible_moves.each do |next_path|
-      counter = 1
-      counter += find_depth_of_future_move(next_path, tile_to_find)
-      depths_all_next_paths << counter
-    end
-    depths_all_next_paths.min
+    all_possible_coordinates.map { |coordinates| PossibleMove.new(coordinates, depth - 1) }
   end
 end
 
 board = GameBoard.new
 board.knight_moves([1, 1], [8, 1])
-# arr.index(arr.min) for future
-# make commit for depth
