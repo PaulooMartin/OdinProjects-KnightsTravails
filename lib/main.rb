@@ -4,8 +4,9 @@ class GameBoard
     populate_tiles
   end
 
-  def knight_moves(start_pos, _end_pos)
+  def knight_moves(start_pos, end_pos)
     knight = Knight.new(start_pos)
+    knight.move_to_tile(end_pos)
   end
 
   private
@@ -25,7 +26,7 @@ end
 
 class Knight
   def initialize(start_position)
-    @current_tile = PossibleMove.new(start_position, 3)
+    @current_tile = PossibleMove.new(start_position, 6)
     @next_moves = @current_tile.next_possible_moves
   end
 
@@ -36,6 +37,22 @@ class Knight
   def show_next_moves
     puts "Your next possible moves from current position: #{current_position}"
     @current_tile.next_possible_moves.each { |possible_move| puts "-> #{possible_move.current_coordinates}" }
+  end
+
+  def move_to_tile(desired_coords)
+    moves = 0
+    until @current_tile.current_coordinates == desired_coords
+      depths_all_paths = []
+      @next_moves.each do |path|
+        depths_all_paths << @current_tile.find_depth_of_future_move(path, desired_coords)
+      end
+      index_lowest = depths_all_paths.index(depths_all_paths.min)
+      @current_tile = @next_moves[index_lowest]
+      @next_moves = @current_tile.next_possible_moves
+      p @current_tile.current_coordinates
+      moves += 1
+    end
+    puts "Finished in #{moves} moves"
   end
 end
 
@@ -92,7 +109,7 @@ class PossibleMove
                  true)
   end
 
-  private
+  # private
 
   def all_possible_coordinates
     x, y = @current_coordinates
@@ -134,20 +151,9 @@ class PossibleMove
     end
     depths_all_next_paths.min
   end
-
-
 end
 
 board = GameBoard.new
-knight = Knight.new([1, 1])
-moves = PossibleMove.new([1, 1], 3)
-moves.pretty_print
-distance = []
-moves.next_possible_moves.each do |path|
-  distance << moves.find_depth_of_future_move(path, [1, 3])
-end
-p distance
-p moves.next_possible_moves[0].current_coordinates
-p moves.next_possible_moves[1].current_coordinates
+board.knight_moves([1, 1], [8, 1])
 # arr.index(arr.min) for future
 # make commit for depth
